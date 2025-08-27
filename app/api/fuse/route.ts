@@ -32,9 +32,9 @@ export async function POST(req: NextRequest) {
             return new Response(JSON.stringify({ error: 'Server misconfigured: missing GOOGLE_API_KEY.' }), { status: 500 });
         }
 
-        // Basic prompt policy (extend as needed)
-        if (prompt.length > 1000) {
-            return new Response(JSON.stringify({ error: 'Prompt too long (max 1000 chars).' }), { status: 400 });
+        // Basic prompt policy: hard limit to 300 chars to keep requests concise
+        if (prompt.length > 300) {
+            return new Response(JSON.stringify({ error: 'Prompt too long (max 300 chars).' }), { status: 400 });
         }
 
         const [basePart, productPart] = await Promise.all([fileToPart(base), fileToPart(product)]);
