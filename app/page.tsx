@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 export default function Page() {
     const githubRepo = 'https://github.com/darshankparmar/ImageFusion';
@@ -13,12 +13,47 @@ export default function Page() {
     const [hasProd, setHasProd] = useState(false);
     const [dropBase, setDropBase] = useState(false);
     const [dropProd, setDropProd] = useState(false);
+    const [sampleAlt, setSampleAlt] = useState(false);
+    const [showSampleInfo, setShowSampleInfo] = useState(false);
 
     const baseRef = useRef<HTMLInputElement>(null);
     const prodRef = useRef<HTMLInputElement>(null);
     const promptRef = useRef<HTMLTextAreaElement>(null);
     const basePrevRef = useRef<HTMLImageElement>(null);
     const prodPrevRef = useRef<HTMLImageElement>(null);
+    const infoWrapRef = useRef<HTMLDivElement>(null);
+    const infoTimerRef = useRef<number | null>(null);
+
+    useEffect(() => {
+        const onDocClick = (e: MouseEvent) => {
+            if (!showSampleInfo) return;
+            const el = infoWrapRef.current;
+            if (el && !el.contains(e.target as Node)) {
+                setShowSampleInfo(false);
+            }
+        };
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setShowSampleInfo(false);
+        };
+        window.addEventListener('click', onDocClick);
+        window.addEventListener('keydown', onKey);
+        return () => {
+            window.removeEventListener('click', onDocClick);
+            window.removeEventListener('keydown', onKey);
+        };
+    }, [showSampleInfo]);
+
+    const toggleSampleInfo = () => {
+        const next = !showSampleInfo;
+        setShowSampleInfo(next);
+        if (infoTimerRef.current) {
+            window.clearTimeout(infoTimerRef.current);
+            infoTimerRef.current = null;
+        }
+        if (next) {
+            infoTimerRef.current = window.setTimeout(() => setShowSampleInfo(false), 4000);
+        }
+    };
 
     const setPreview = (input: HTMLInputElement | null, img: HTMLImageElement | null, which?: 'base' | 'prod') => {
         if (!input || !img) return;
@@ -58,8 +93,15 @@ export default function Page() {
         if (disabled || generating) return;
         try {
             setError(''); setStatus('');
-            const modelUrl = 'https://raw.githubusercontent.com/darshankparmar/ImageFusion/main/images/model/model.png';
-            const productUrl = 'https://raw.githubusercontent.com/darshankparmar/ImageFusion/main/images/products/dress.png';
+            // Toggle between two curated sample sets on each click
+            const modelUrl1 = 'https://raw.githubusercontent.com/darshankparmar/ImageFusion/main/images/model/model.png';
+            const productUrl1 = 'https://raw.githubusercontent.com/darshankparmar/ImageFusion/main/images/products/dress.png';
+            const modelUrl2 = 'https://raw.githubusercontent.com/darshankparmar/ImageFusion/main/images/model/katrina.png';
+            const productUrl2 = 'https://raw.githubusercontent.com/darshankparmar/ImageFusion/main/images/products/product.jpeg';
+
+            const useAlt = sampleAlt; // current state decides which to load now
+            const modelUrl = useAlt ? modelUrl2 : modelUrl1;
+            const productUrl = useAlt ? productUrl2 : productUrl1;
             const [b1, b2] = await Promise.all([
                 fetch(modelUrl).then(r => { if (!r.ok) throw new Error('Fetch sample failed'); return r.blob(); }),
                 fetch(productUrl).then(r => { if (!r.ok) throw new Error('Fetch sample failed'); return r.blob(); })
@@ -78,14 +120,15 @@ export default function Page() {
                 prodRef.current.files = dt2.files;
                 setPreview(prodRef.current, prodPrevRef.current, 'prod');
             }
-            const samplePrompt = `Create a professional e-commerce fashion photo. Take the blue floral dress
+            const samplePrompt1 = `Create a professional e-commerce fashion photo. Take the blue floral dress
 from the first image and let the woman from the second image wear it.
 Generate a realistic, full-body shot of the woman wearing the dress, with
 the lighting and shadows adjusted to match the outdoor environment.`;
+            const samplePrompt2 = `Replace the red purse with the black-and-white handbag, keeping the model’s pose, grip, lighting, and background natural and photo-realistic.`;
             if (promptRef.current) {
-                promptRef.current.value = samplePrompt;
+                promptRef.current.value = useAlt ? samplePrompt2 : samplePrompt1;
             }
-            setStatus('Loaded sample images and prompt.');
+            setSampleAlt(!sampleAlt); // flip for next click
         } catch (e) {
             setError('Could not load sample images.');
         }
@@ -149,19 +192,14 @@ the lighting and shadows adjusted to match the outdoor environment.`;
 
     return (
         <div>
-            {/* Header with title and GitHub icon */}
+            {/* Header with title */}
             <div className="topbar header">
-                <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                    <h1 className="hero-title" style={{ margin: 0 }}>Seamless Product Replacement</h1>
-                    <a href={githubRepo} target="_blank" rel="noopener noreferrer" aria-label="GitHub repository" className="gh">
-                        <svg viewBox="0 0 16 16" width={20} height={20} aria-hidden="true">
-                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.58.82-2.14-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.14 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
-                        </svg>
-                    </a>
+                <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6, marginBottom: 0, textAlign: 'left' }}>
+                    <h1 className="hero-title" style={{ margin: 0, textAlign: 'left' }}>Combine Model and Product Images with AI</h1>
+                    <p className="hero-subtitle" style={{ marginTop: 4, textAlign: 'left' }}>AI that helps you place your products on models without a photo shoot.</p>
                 </div>
             </div>
             <div className="container">
-                <p className="hero-subtitle">Effortlessly swap and blend products while keeping the scene natural and photo-realistic.</p>
 
                 <div className="grid">
                     <section>
@@ -169,7 +207,7 @@ the lighting and shadows adjusted to match the outdoor environment.`;
                             <div className="two">
                                 <div>
                                     <h3>Base image</h3>
-                                    <input aria-label="Upload base image" ref={baseRef} type="file" accept="image/*" className="file" onChange={() => setPreview(baseRef.current, basePrevRef.current, 'base')} />
+                                    <input aria-label="Upload base image" ref={baseRef} type="file" accept="image/*" className="file" onChange={() => setPreview(baseRef.current, basePrevRef.current, 'base')} style={{ marginBottom: '5px' }} />
                                     <div
                                         className={`preview-frame${dropBase ? ' drop-active' : ''}`}
                                         onDragOver={(e) => { e.preventDefault(); setDropBase(true); }}
@@ -183,7 +221,7 @@ the lighting and shadows adjusted to match the outdoor environment.`;
                                 </div>
                                 <div>
                                     <h3>Product image</h3>
-                                    <input aria-label="Upload product image" ref={prodRef} type="file" accept="image/*" className="file" onChange={() => setPreview(prodRef.current, prodPrevRef.current, 'prod')} />
+                                    <input aria-label="Upload product image" ref={prodRef} type="file" accept="image/*" className="file" onChange={() => setPreview(prodRef.current, prodPrevRef.current, 'prod')} style={{ marginBottom: '5px' }} />
                                     <div
                                         className={`preview-frame${dropProd ? ' drop-active' : ''}`}
                                         onDragOver={(e) => { e.preventDefault(); setDropProd(true); }}
@@ -196,15 +234,36 @@ the lighting and shadows adjusted to match the outdoor environment.`;
                                     </div>
                                 </div>
                             </div>
-                            <div className="actions" style={{ marginTop: 10 }}>
+                            <div className="sample-row">
                                 <button type="button" className="btn btn-secondary btn-block btn-inline" disabled={disabled || generating} onClick={useSampleImages}>Try sample images</button>
+                                <div className="info-wrap" ref={infoWrapRef}>
+                                    <button
+                                        type="button"
+                                        className="btn-icon"
+                                        aria-label="Samples info"
+                                        onClick={(e) => { e.stopPropagation(); toggleSampleInfo(); }}
+                                    >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.6" />
+                                            <path d="M12 17v-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                                            <circle cx="12" cy="7.5" r="1.2" fill="currentColor" />
+                                        </svg>
+                                    </button>
+                                    {showSampleInfo && (
+                                        <div className="tooltip" role="tooltip">
+                                            <div className="tooltip-card">
+                                                Loads sample images. Tap again to switch to the alternate sample set.
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             <div style={{ marginTop: 14 }}>
                                 <h3 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                                     <span>Prompt</span>
                                     <span className="muted" style={{ fontSize: '0.9rem' }}>Optional</span>
                                 </h3>
-                                <label className="muted" style={{ display: 'block', marginBottom: 6, fontSize: '0.95rem' }}>Preset</label>
+                                {/* <label className="muted" style={{ display: 'block', marginBottom: 6, fontSize: '0.95rem' }}>Preset</label> */}
                                 <select className="select" value={preset} onChange={(e) => setPreset(e.target.value)}>
                                     <option value="natural">Place product naturally (match lighting/shadows)</option>
                                     <option value="seamless">Blend seamlessly, photorealistic</option>
@@ -226,19 +285,12 @@ the lighting and shadows adjusted to match the outdoor environment.`;
                                         {generating ? (<><span className="btn-loader" />Generating…</>) : 'Generate'}
                                     </button>
                                     <button disabled={disabled} onClick={onClear} className="btn btn-secondary btn-block btn-inline">Clear</button>
-                                    <span className="muted">{status}</span>
+                                    <span className="muted" style={{ marginLeft: '10px' }}>{status}</span>
                                 </div>
                                 {error ? <div className="error">{error}</div> : null}
                             </div>
                         </div>
-                        <div className="footer">
-                            Interested in a specific use case related to this? Contact:
-                            <a href="tel:+918469108864" style={{ textDecoration: 'none', marginLeft: 6 }}>+91 84691 08864</a>
-                            {' '}
-                            •
-                            {' '}
-                            <a href="mailto:darshanparmar.dev@gmail.com" style={{ textDecoration: 'none' }}>darshanparmar.dev@gmail.com</a>
-                        </div>
+                        {/* removed inline footer; moved to global footer bar */}
                     </section>
 
                     <aside>
@@ -261,7 +313,32 @@ the lighting and shadows adjusted to match the outdoor environment.`;
                     </aside>
                 </div>
             </div>
-            {/* footer removed per request */}
+            {/* Professional footer */}
+            <div className="footer-bar">
+                <div className="container footer-row">
+                    <div className="contact-block">
+                        <span>Interested in a specific use case related to this? Contact:</span>
+                        <div className="contact-items">
+                            <span className="contact-item">
+                                <span className="icon" aria-hidden>📞</span>
+                                <a href="tel:+918469108864" style={{ textDecoration: 'none' }}>+91 84691 08864</a>
+                            </span>
+                            <span className="contact-sep">•</span>
+                            <span className="contact-item">
+                                <span className="icon" aria-hidden>✉️</span>
+                                <a href="mailto:darshanparmar.dev@gmail.com" style={{ textDecoration: 'none' }}>darshanparmar.dev@gmail.com</a>
+                            </span>
+                        </div>
+                    </div>
+                    <div className="footer-actions">
+                        <a href={githubRepo} target="_blank" rel="noopener noreferrer" aria-label="GitHub repository" className="gh">
+                            <svg viewBox="0 0 16 16" width={20} height={20} aria-hidden="true">
+                                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.58.82-2.14-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.14 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
             {generating && (
                 <div className="overlay" role="status" aria-live="polite" aria-label="Generating image">
                     <div className="overlay-card">

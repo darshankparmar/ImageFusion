@@ -59,11 +59,18 @@ a {
     max-width: 72ch;
 }
 
+/* Ensure header text is left-aligned */
+.header .hero-title,
+.header .hero-subtitle {
+    text-align: left;
+}
+
 /* Footer */
 .footer-bar {
     margin-top: 24px;
     padding: 16px 0 28px;
     border-top: 1px solid var(--border);
+    background: #fff;
 }
 
 .footer-row {
@@ -71,7 +78,7 @@ a {
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 12px;
     color: var(--muted);
     font-size: 0.95rem;
 }
@@ -88,6 +95,52 @@ a {
     border-radius: 999px;
     background: #fff;
     color: #111;
+}
+
+/* Footer contact helpers */
+.contact-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.contact-items {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.contact-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.contact-sep {
+    color: var(--muted);
+    margin: 0 4px;
+}
+
+.icon {
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+@media (max-width: 480px) {
+    .footer-row {
+        align-items: flex-start;
+    }
+
+    .contact-block {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .contact-sep {
+        display: none;
+    }
 }
 
 /* Spacing helpers */
@@ -111,10 +164,7 @@ a {
 }
 
 .topbar {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    padding: 12px 20px;
+    padding: 12px 0;
 }
 
 .gh {
@@ -221,22 +271,51 @@ a {
     background: #ffffff;
 }
 
-.muted {
+.icon {
     color: var(--muted);
 }
 
-.error {
-    color: var(--danger);
-    margin-top: 6px;
-    font-weight: 500;
+/* Footer tweaks on small screens */
+@media (max-width: 640px) {
+    .footer-bar {
+        padding: 12px 0 18px;
+    }
+
+    .footer-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .footer-actions {
+        align-self: flex-start;
+    }
+
+    .contact-block {
+        gap: 6px;
+        flex-direction: column;
+    }
+
+    .contact-items {
+        gap: 8px;
+    }
+
+    .contact-sep {
+        display: inline;
+    }
+
+    .gh {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+    }
 }
 
-/* Buttons */
 .actions {
     display: flex;
-    gap: 10px;
     align-items: center;
-    margin-top: 12px;
+    gap: 10px;
+    margin: 5px;
     flex-wrap: wrap;
 }
 
@@ -259,6 +338,47 @@ a {
     border-color: var(--border);
 }
 
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--muted);
+    cursor: default;
+}
+
+/* Sample row keeps the button and info icon aligned on one line */
+.sample-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.sample-row .btn {
+    flex: 1 1 auto;
+}
+
+.sample-row .btn-icon {
+    flex: 0 0 38px;
+}
+
+@media (max-width: 480px) {
+    .sample-row {
+        gap: 8px;
+    }
+
+    .sample-row .btn-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+    }
+}
+
 .btn-block {
     width: 100%;
 }
@@ -266,6 +386,23 @@ a {
 @media (min-width: 900px) {
     .btn-inline {
         width: auto;
+    }
+}
+
+/* Mobile-friendly actions: stack buttons full-width */
+@media (max-width: 640px) {
+    .actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .actions .btn {
+        width: 100% !important;
+    }
+
+    .actions .muted {
+        width: 100%;
+        margin-left: 0 !important;
     }
 }
 
@@ -350,9 +487,70 @@ a {
     background: #ffffff;
 }
 
+/* End of image result styles */
+
 .footer {
     margin-top: 12px;
     margin-bottom: 12px;
     color: var(--muted);
     font-size: 0.9rem;
+}
+
+/* Tooltip for sample info */
+.info-wrap {
+    position: relative;
+}
+
+.tooltip {
+    position: absolute;
+    top: 44px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+}
+
+.tooltip-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    /* Make tooltip wider by default with responsive bounds */
+    width: clamp(320px, 44vw, 380px);
+    max-width: 90vw;
+    font-size: 0.92rem;
+    line-height: 1.35;
+    white-space: normal;
+    word-break: normal;
+    hyphens: auto;
+}
+
+/* On very small screens, flip tooltip above and tighten width */
+@media (max-width: 480px) {
+    .tooltip {
+        top: auto;
+        bottom: 44px;
+        left: auto;
+        right: 0;
+        transform: none;
+    }
+
+    .tooltip-card {
+        width: min(92vw, 360px);
+        font-size: 0.9rem;
+    }
+}
+
+/* On narrow screens, anchor tooltip to the button's right edge to avoid viewport overflow */
+@media (max-width: 768px) {
+    .info-wrap .tooltip {
+        left: auto;
+        right: 0;
+        transform: none;
+    }
+
+    .info-wrap .tooltip .tooltip-card {
+        width: min(92vw, 420px);
+    }
 }
