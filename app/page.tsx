@@ -14,6 +14,7 @@ export default function Page() {
     const [dropBase, setDropBase] = useState(false);
     const [dropProd, setDropProd] = useState(false);
     const [sampleAlt, setSampleAlt] = useState(false);
+    const [loadingSamples, setLoadingSamples] = useState(false);
     const [showSampleInfo, setShowSampleInfo] = useState(false);
 
     const baseRef = useRef<HTMLInputElement>(null);
@@ -90,8 +91,9 @@ export default function Page() {
     };
 
     const useSampleImages = async () => {
-        if (disabled || generating) return;
+        if (disabled || generating || loadingSamples) return;
         try {
+            setLoadingSamples(true);
             setError(''); setStatus('');
             // Toggle between two curated sample sets on each click
             const modelUrl1 = 'https://raw.githubusercontent.com/darshankparmar/ImageFusion/main/images/model/model.png';
@@ -131,6 +133,8 @@ the lighting and shadows adjusted to match the outdoor environment.`;
             setSampleAlt(!sampleAlt); // flip for next click
         } catch (e) {
             setError('Could not load sample images.');
+        } finally {
+            setLoadingSamples(false);
         }
     };
 
@@ -235,7 +239,15 @@ the lighting and shadows adjusted to match the outdoor environment.`;
                                 </div>
                             </div>
                             <div className="sample-row">
-                                <button type="button" className="btn btn-secondary btn-block btn-inline" disabled={disabled || generating} onClick={useSampleImages}>Try sample images</button>
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary btn-block btn-inline"
+                                    disabled={disabled || generating || loadingSamples}
+                                    aria-busy={loadingSamples}
+                                    onClick={useSampleImages}
+                                >
+                                    {loadingSamples ? (<><span className="btn-loader" />Loading…</>) : 'Try sample images'}
+                                </button>
                                 <div className="info-wrap" ref={infoWrapRef}>
                                     <button
                                         type="button"
