@@ -248,6 +248,15 @@ a {
     overflow: hidden;
 }
 
+/* Hide empty preview boxes; show only when the image has a src */
+.preview-frame {
+    display: none;
+}
+
+.preview-frame:has(.preview[src]:not([src=""])) {
+    display: flex;
+}
+
 .preview-frame.drop-active {
     border-color: var(--accent);
     box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.25);
@@ -258,6 +267,12 @@ a {
     max-height: 100%;
     object-fit: contain;
     display: block;
+}
+
+/* Hide preview <img> when there's no src so alt text doesn't show */
+.preview[src=""],
+.preview:not([src]) {
+    display: none;
 }
 
 .textarea {

@@ -8,7 +8,7 @@ export default function Page() {
     const [resultUrl, setResultUrl] = useState<string | null>(null);
     const [disabled, setDisabled] = useState(false);
     const [generating, setGenerating] = useState(false);
-    const [preset, setPreset] = useState('natural');
+    const [promptText, setPromptText] = useState('');
     const [hasBase, setHasBase] = useState(false);
     const [hasProd, setHasProd] = useState(false);
     const [dropBase, setDropBase] = useState(false);
@@ -127,9 +127,11 @@ from the first image and let the woman from the second image wear it.
 Generate a realistic, full-body shot of the woman wearing the dress, with
 the lighting and shadows adjusted to match the outdoor environment.`;
             const samplePrompt2 = `Replace the red purse with the black-and-white handbag, keeping the model’s pose, grip, lighting, and background natural and photo-realistic.`;
+            const newPrompt = useAlt ? samplePrompt2 : samplePrompt1;
             if (promptRef.current) {
-                promptRef.current.value = useAlt ? samplePrompt2 : samplePrompt1;
+                promptRef.current.value = newPrompt;
             }
+            setPromptText(newPrompt);
             setSampleAlt(!sampleAlt); // flip for next click
         } catch (e) {
             setError('Could not load sample images.');
@@ -142,16 +144,10 @@ the lighting and shadows adjusted to match the outdoor environment.`;
         setError(''); setStatus('');
         const base = baseRef.current?.files?.[0];
         const prod = prodRef.current?.files?.[0];
-        const presetMap: Record<string, string> = {
-            natural: 'Place the product naturally on the model. Match lighting, perspective, and shadows for a realistic look.',
-            seamless: 'Blend the product seamlessly into the scene in a photorealistic style. Ensure edges, lighting, and shadows are coherent.',
-            catalog: 'Generate a clean catalog-style visualization of the product on a neutral background with even lighting.',
-            premium: 'Creative variation: style the product as premium advertising imagery with refined lighting and subtle depth.',
-            stylized: 'Stylized variation: produce a sketch or cartoon-like mockup of the product while keeping proportions accurate.'
-        };
-        const typedPrompt = (promptRef.current?.value || '').trim();
-        const prompt = typedPrompt || presetMap[preset];
+        const typedPrompt = (promptText || promptRef.current?.value || '').trim();
+        const prompt = typedPrompt;
         if (!base || !prod) { setError('Please select both images.'); return; }
+        if (!prompt) { setError('Please enter a prompt.'); return; }
         const form = new FormData();
         form.append('baseImage', base);
         form.append('productImage', prod);
@@ -189,8 +185,11 @@ the lighting and shadows adjusted to match the outdoor environment.`;
         if (baseRef.current) baseRef.current.value = '';
         if (prodRef.current) prodRef.current.value = '';
         if (promptRef.current) promptRef.current.value = '';
+        setPromptText('');
         if (basePrevRef.current) basePrevRef.current.src = '';
         if (prodPrevRef.current) prodPrevRef.current.src = '';
+        setHasBase(false);
+        setHasProd(false);
         setResultUrl(null); setError(''); setStatus('');
     };
 
@@ -199,8 +198,8 @@ the lighting and shadows adjusted to match the outdoor environment.`;
             {/* Header with title */}
             <div className="topbar header">
                 <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6, marginBottom: 0, textAlign: 'left' }}>
-                    <h1 className="hero-title" style={{ margin: 0, textAlign: 'left' }}>Combine Model and Product Images with AI</h1>
-                    <p className="hero-subtitle" style={{ marginTop: 4, textAlign: 'left' }}>AI that helps you place your products on models without a photo shoot.</p>
+                    <h1 className="hero-title" style={{ margin: 0, textAlign: 'left' }}>Photofusion</h1>
+                    <p className="hero-subtitle" style={{ marginTop: 4, textAlign: 'left' }}>A simple tool for designers and small businesses to generate product shots.</p>
                 </div>
             </div>
             <div className="container">
@@ -273,24 +272,18 @@ the lighting and shadows adjusted to match the outdoor environment.`;
                             <div style={{ marginTop: 14 }}>
                                 <h3 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                                     <span>Prompt</span>
-                                    <span className="muted" style={{ fontSize: '0.9rem' }}>Optional</span>
                                 </h3>
-                                {/* <label className="muted" style={{ display: 'block', marginBottom: 6, fontSize: '0.95rem' }}>Preset</label> */}
-                                <select className="select" value={preset} onChange={(e) => setPreset(e.target.value)}>
-                                    <option value="natural">Place product naturally (match lighting/shadows)</option>
-                                    <option value="seamless">Blend seamlessly, photorealistic</option>
-                                    <option value="catalog">Clean catalog-style on neutral background</option>
-                                    <option value="premium">Creative premium advertising style</option>
-                                    <option value="stylized">Stylized sketch/cartoon mockup</option>
-                                </select>
-                                <div style={{ height: 8 }} />
-                                <div className="muted" style={{ fontSize: '0.9rem', marginBottom: 6 }}>
-                                    If you leave the prompt empty, we’ll use your selected preset.
-                                </div>
-                                <textarea ref={promptRef} placeholder="E.g., Place the chair in the back-left corner and match lighting and perspective." className="textarea" />
+                                <textarea
+                                    ref={promptRef}
+                                    value={promptText}
+                                    onChange={(e) => setPromptText(e.target.value)}
+                                    required
+                                    placeholder="Describe exactly how the product should appear on the model (position, lighting, shadows, perspective)."
+                                    className="textarea"
+                                />
                                 <div className="actions">
                                     <button
-                                        disabled={disabled || !hasBase || !hasProd}
+                                        disabled={disabled || !hasBase || !hasProd || (promptText.trim() === '')}
                                         onClick={onGenerate}
                                         className="btn btn-primary btn-block btn-inline"
                                     >
