@@ -1,0 +1,15 @@
+:root {
+    color-scheme: dark;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: radial-gradient(1200px 800px at 20% -10%, #111425 0%, #0b0c0e 60%) fixed;
+}
+
+* {
+    box-sizing: border-box;
+}
