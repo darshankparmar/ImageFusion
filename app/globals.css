@@ -1,14 +1,14 @@
 :root {
-    color-scheme: dark;
-    --bg: #0b0c0e;
-    --card: #14161a;
-    --text: #e7e9ee;
-    --muted: #9aa3af;
-    --border: #262a31;
-    --accent: #4f8cff;
-    --accent-2: #7a5cff;
-    --danger: #ff5d5d;
-    --radius: 12px;
+    color-scheme: light;
+    --bg: #f7f8fb;
+    --card: #ffffff;
+    --text: #0b0c0e;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --accent: #3b82f6;
+    --accent-2: #8b5cf6;
+    --danger: #ef4444;
+    --radius: 14px;
 }
 
 html,
@@ -16,7 +16,7 @@ body {
     height: 100%;
     margin: 0;
     padding: 0;
-    background: radial-gradient(1200px 800px at 20% -10%, #111425 0%, #0b0c0e 60%) fixed;
+    background: linear-gradient(180deg, #f9fafb 0%, var(--bg) 40%, #ffffff 100%) fixed;
     color: var(--text);
 }
 
@@ -24,11 +24,90 @@ body {
     box-sizing: border-box;
 }
 
+/* Typography */
+h1 {
+    font-size: clamp(1.8rem, 1.1rem + 2vw, 2.4rem);
+    line-height: 1.2;
+}
+
+h3 {
+    font-size: 1.05rem;
+}
+
+a {
+    color: inherit;
+}
+
+/* Header / Hero */
+.header {
+    padding: 10px 0 8px;
+}
+
+.hero {
+    padding: 10px 0 6px;
+}
+
+.hero-title {
+    margin: 0 0 8px;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+}
+
+.hero-subtitle {
+    margin: 0 0 18px;
+    color: var(--muted);
+    max-width: 72ch;
+}
+
+/* Footer */
+.footer-bar {
+    margin-top: 24px;
+    padding: 16px 0 28px;
+    border-top: 1px solid var(--border);
+}
+
+.footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.footer-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.footer-chip {
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #fff;
+    color: #111;
+}
+
+/* Spacing helpers */
+.spacer-sm {
+    height: 8px;
+}
+
+.spacer-md {
+    height: 16px;
+}
+
+.spacer-lg {
+    height: 24px;
+}
+
 /* Layout */
 .container {
     max-width: 1200px;
-    margin: 16px auto;
-    padding: 0 14px;
+    margin: 24px auto;
+    padding: 0 18px;
 }
 
 .topbar {
@@ -52,23 +131,23 @@ body {
 
 .grid {
     display: grid;
-    gap: 16px;
+    gap: 20px;
     grid-template-columns: 1fr;
 }
 
 @media (min-width: 900px) {
     .grid {
         grid-template-columns: 1.25fr 1fr;
-        gap: 20px;
+        gap: 24px;
     }
 }
 
 .card {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.02)), var(--card);
+    background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 12px;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+    padding: 16px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
 }
 
 .card h3 {
@@ -77,14 +156,14 @@ body {
 
 .two {
     display: grid;
-    gap: 12px;
+    gap: 16px;
     grid-template-columns: 1fr;
 }
 
 @media (min-width: 700px) {
     .two {
         grid-template-columns: 1fr 1fr;
-        gap: 16px;
+        gap: 20px;
     }
 }
 
@@ -94,7 +173,7 @@ body {
     padding: 10px 12px;
     border-radius: 10px;
     border: 1px solid var(--border);
-    background: #0f1114;
+    background: #ffffff;
     color: var(--text);
 }
 
@@ -103,7 +182,7 @@ body {
     padding: 10px 12px;
     border-radius: 10px;
     border: 1px solid var(--border);
-    background: #0f1114;
+    background: #ffffff;
     color: var(--text);
 }
 
@@ -112,11 +191,16 @@ body {
     height: 220px;
     border: 1px dashed var(--border);
     border-radius: 10px;
-    background: repeating-conic-gradient(#0f1114 0% 25%, #0e1013 0% 50%) 50% / 20px 20px;
+    background: repeating-conic-gradient(#f3f4f6 0% 25%, #eef2f7 0% 50%) 50% / 20px 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+}
+
+.preview-frame.drop-active {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.25);
 }
 
 .preview {
@@ -134,7 +218,7 @@ body {
     border: 1px solid var(--border);
     padding: 10px;
     color: var(--text);
-    background: #0f1114;
+    background: #ffffff;
 }
 
 .muted {
@@ -170,7 +254,7 @@ body {
 }
 
 .btn-secondary {
-    background: transparent;
+    background: #ffffff;
     color: var(--text);
     border-color: var(--border);
 }
@@ -196,7 +280,7 @@ body {
     width: 20px;
     height: 20px;
     border: 2px solid var(--muted);
-    border-top-color: #ffffff;
+    border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -204,8 +288,8 @@ body {
 .btn-loader {
     width: 16px;
     height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    border-top-color: #fff;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-right: 8px;
@@ -214,7 +298,7 @@ body {
 .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.45);
+    background: rgba(0, 0, 0, 0.25);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -229,13 +313,13 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
 }
 
 .skeleton {
     position: relative;
     overflow: hidden;
-    background: #0f1114;
+    background: #eef2f7;
     border-radius: 10px;
     min-height: 240px;
     border: 1px solid var(--border);
@@ -252,7 +336,7 @@ body {
     position: absolute;
     inset: 0;
     transform: translateX(-100%);
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0));
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0));
     animation: shimmer 1.2s infinite;
 }
 
@@ -263,11 +347,12 @@ body {
     border-radius: 10px;
     display: block;
     object-fit: contain;
-    background: #0f1114;
+    background: #ffffff;
 }
 
 .footer {
     margin-top: 12px;
+    margin-bottom: 12px;
     color: var(--muted);
     font-size: 0.9rem;
 }

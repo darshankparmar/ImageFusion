@@ -9,6 +9,10 @@ export default function Page() {
     const [disabled, setDisabled] = useState(false);
     const [generating, setGenerating] = useState(false);
     const [preset, setPreset] = useState('natural');
+    const [hasBase, setHasBase] = useState(false);
+    const [hasProd, setHasProd] = useState(false);
+    const [dropBase, setDropBase] = useState(false);
+    const [dropProd, setDropProd] = useState(false);
 
     const baseRef = useRef<HTMLInputElement>(null);
     const prodRef = useRef<HTMLInputElement>(null);
@@ -16,13 +20,38 @@ export default function Page() {
     const basePrevRef = useRef<HTMLImageElement>(null);
     const prodPrevRef = useRef<HTMLImageElement>(null);
 
-    const setPreview = (input: HTMLInputElement | null, img: HTMLImageElement | null) => {
+    const setPreview = (input: HTMLInputElement | null, img: HTMLImageElement | null, which?: 'base' | 'prod') => {
         if (!input || !img) return;
         const file = input.files?.[0];
-        if (!file) { img.src = ''; return; }
+        if (!file) {
+            img.src = '';
+            if (which === 'base') setHasBase(false);
+            if (which === 'prod') setHasProd(false);
+            return;
+        }
+        // Optional: simple size check, warn if very large
+        const maxMB = 10;
+        if (file.size > maxMB * 1024 * 1024) {
+            setError(`Selected file is larger than ${maxMB}MB. Consider a smaller image for faster processing.`);
+        }
         const reader = new FileReader();
         reader.onload = () => { img.src = String(reader.result); };
         reader.readAsDataURL(file);
+        if (which === 'base') setHasBase(true);
+        if (which === 'prod') setHasProd(true);
+    };
+
+    const handleDrop = async (e: React.DragEvent<HTMLDivElement>, which: 'base' | 'prod') => {
+        e.preventDefault();
+        if (which === 'base') setDropBase(false); else setDropProd(false);
+        const file = e.dataTransfer.files?.[0];
+        if (!file) return;
+        const input = which === 'base' ? baseRef.current : prodRef.current;
+        if (!input) return;
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        setPreview(input, which === 'base' ? basePrevRef.current : prodPrevRef.current, which);
     };
 
     const useSampleImages = async () => {
@@ -120,21 +149,19 @@ the lighting and shadows adjusted to match the outdoor environment.`;
 
     return (
         <div>
-            {/* Top header with GitHub icon */}
-            <div className="topbar">
-                <a href={githubRepo} target="_blank" rel="noopener noreferrer" aria-label="GitHub repository" className="gh">
-                    <svg viewBox="0 0 16 16" width={20} height={20} aria-hidden="true">
-                        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.58.82-2.14-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.14 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
-                    </svg>
-                </a>
+            {/* Header with title and GitHub icon */}
+            <div className="topbar header">
+                <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                    <h1 className="hero-title" style={{ margin: 0 }}>Image Fusion with Gemini 2.5 Flash Image (Preview)</h1>
+                    <a href={githubRepo} target="_blank" rel="noopener noreferrer" aria-label="GitHub repository" className="gh">
+                        <svg viewBox="0 0 16 16" width={20} height={20} aria-hidden="true">
+                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.58.82-2.14-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.14 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+                        </svg>
+                    </a>
+                </div>
             </div>
             <div className="container">
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                    <div>
-                        <h1 style={{ margin: 0, marginBottom: 6, fontWeight: 700 }}>Image Fusion with Gemini 2.5 Flash Image (Preview)</h1>
-                        <p className="muted" style={{ marginTop: 0, marginBottom: 16 }}>Upload a base scene and a product image, add instructions, and generate a fused, photorealistic image.</p>
-                    </div>
-                </div>
+                {/* optional subtitle could go here if needed */}
 
                 <div className="grid">
                     <section>
@@ -142,13 +169,31 @@ the lighting and shadows adjusted to match the outdoor environment.`;
                             <div className="two">
                                 <div>
                                     <h3>Base image</h3>
-                                    <input ref={baseRef} type="file" accept="image/*" className="file" onChange={() => setPreview(baseRef.current, basePrevRef.current)} />
-                                    <div className="preview-frame"><img ref={basePrevRef} alt="Base preview" className="preview" /></div>
+                                    <input aria-label="Upload base image" ref={baseRef} type="file" accept="image/*" className="file" onChange={() => setPreview(baseRef.current, basePrevRef.current, 'base')} />
+                                    <div
+                                        className={`preview-frame${dropBase ? ' drop-active' : ''}`}
+                                        onDragOver={(e) => { e.preventDefault(); setDropBase(true); }}
+                                        onDragEnter={() => setDropBase(true)}
+                                        onDragLeave={() => setDropBase(false)}
+                                        onDrop={(e) => handleDrop(e, 'base')}
+                                        onClick={() => baseRef.current?.click()}
+                                    >
+                                        <img ref={basePrevRef} alt="Base preview" className="preview" />
+                                    </div>
                                 </div>
                                 <div>
                                     <h3>Product image</h3>
-                                    <input ref={prodRef} type="file" accept="image/*" className="file" onChange={() => setPreview(prodRef.current, prodPrevRef.current)} />
-                                    <div className="preview-frame"><img ref={prodPrevRef} alt="Product preview" className="preview" /></div>
+                                    <input aria-label="Upload product image" ref={prodRef} type="file" accept="image/*" className="file" onChange={() => setPreview(prodRef.current, prodPrevRef.current, 'prod')} />
+                                    <div
+                                        className={`preview-frame${dropProd ? ' drop-active' : ''}`}
+                                        onDragOver={(e) => { e.preventDefault(); setDropProd(true); }}
+                                        onDragEnter={() => setDropProd(true)}
+                                        onDragLeave={() => setDropProd(false)}
+                                        onDrop={(e) => handleDrop(e, 'prod')}
+                                        onClick={() => prodRef.current?.click()}
+                                    >
+                                        <img ref={prodPrevRef} alt="Product preview" className="preview" />
+                                    </div>
                                 </div>
                             </div>
                             <div className="actions" style={{ marginTop: 10 }}>
@@ -173,7 +218,13 @@ the lighting and shadows adjusted to match the outdoor environment.`;
                                 </div>
                                 <textarea ref={promptRef} placeholder="E.g., Place the chair in the back-left corner and match lighting and perspective." className="textarea" />
                                 <div className="actions">
-                                    <button disabled={disabled} onClick={onGenerate} className="btn btn-primary btn-block btn-inline">Generate</button>
+                                    <button
+                                        disabled={disabled || !hasBase || !hasProd}
+                                        onClick={onGenerate}
+                                        className="btn btn-primary btn-block btn-inline"
+                                    >
+                                        {generating ? (<><span className="btn-loader" />Generating…</>) : 'Generate'}
+                                    </button>
                                     <button disabled={disabled} onClick={onClear} className="btn btn-secondary btn-block btn-inline">Clear</button>
                                     <span className="muted">{status}</span>
                                 </div>
@@ -196,12 +247,14 @@ the lighting and shadows adjusted to match the outdoor environment.`;
                                 <img alt="Result image" src={resultUrl} className="result-img" />
                                 <div className="actions">
                                     <a href={resultUrl} download="fused.png"><button className="btn btn-secondary">Download</button></a>
+                                    <a href={resultUrl} target="_blank" rel="noopener"><button className="btn btn-secondary">Open</button></a>
                                 </div>
                             </div>
                         )}
                     </aside>
                 </div>
             </div>
+            {/* footer removed per request */}
             {generating && (
                 <div className="overlay" role="status" aria-live="polite" aria-label="Generating image">
                     <div className="overlay-card">
