@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 export default function Page() {
-    const githubRepo = 'https://github.com/darshankparmar/ImageFusion';
+    const githubRepo = 'https://github.com/darshankparmar/Photofusion';
     const [status, setStatus] = useState('');
     const [error, setError] = useState('');
     const [resultUrl, setResultUrl] = useState<string | null>(null);
@@ -13,7 +13,7 @@ export default function Page() {
     const [hasProd, setHasProd] = useState(false);
     const [dropBase, setDropBase] = useState(false);
     const [dropProd, setDropProd] = useState(false);
-    const [sampleAlt, setSampleAlt] = useState(false);
+    const [sampleIdx, setSampleIdx] = useState(0); // cycles through 4 curated sample sets
     const [loadingSamples, setLoadingSamples] = useState(false);
     const [showSampleInfo, setShowSampleInfo] = useState(false);
 
@@ -90,20 +90,38 @@ export default function Page() {
         setPreview(input, which === 'base' ? basePrevRef.current : prodPrevRef.current, which);
     };
 
+    const sets = [
+        {
+            model: 'https://raw.githubusercontent.com/darshankparmar/Photofusion/main/images/model/alia.jpg',
+            product: 'https://raw.githubusercontent.com/darshankparmar/Photofusion/main/images/products/goggle.jpg',
+            prompt: 'Add the provided goggles to the model\u2019s face, aligning naturally with her eyes and facial angle. Ensure correct size, perspective, lighting, and shadows so it looks realistic while keeping her pose, skin tone, and background unchanged.',
+        },
+        {
+            model: 'https://raw.githubusercontent.com/darshankparmar/Photofusion/main/images/model/model.png',
+            product: 'https://raw.githubusercontent.com/darshankparmar/Photofusion/main/images/products/dress.png',
+            prompt: `Create a professional e-commerce fashion photo. Take the blue floral dress from the first image and let the woman from the second image wear it. Generate a realistic, full-body shot of the woman wearing the dress, with the lighting and shadows adjusted to match the outdoor environment.`,
+        },
+        {
+            model: 'https://raw.githubusercontent.com/darshankparmar/Photofusion/main/images/model/disapatani.jpeg',
+            product: 'https://raw.githubusercontent.com/darshankparmar/Photofusion/main/images/products/jewelry.png',
+            prompt: 'Place the diamond necklace naturally on the model\u2019s neck, aligned and sized realistically. Keep lighting, shadows, and reflections natural for a photorealistic result.',
+        },
+        {
+            model: 'https://raw.githubusercontent.com/darshankparmar/Photofusion/main/images/model/katrina.png',
+            product: 'https://raw.githubusercontent.com/darshankparmar/Photofusion/main/images/products/product.jpeg',
+            prompt: 'Replace the red purse with the black-and-white handbag, keeping the model\u2019s pose, grip, lighting, and background natural and photo-realistic.',
+        },
+    ] as const;
+
     const useSampleImages = async () => {
         if (disabled || generating || loadingSamples) return;
         try {
             setLoadingSamples(true);
             setError(''); setStatus('');
-            // Toggle between two curated sample sets on each click
-            const modelUrl1 = 'https://raw.githubusercontent.com/darshankparmar/ImageFusion/main/images/model/model.png';
-            const productUrl1 = 'https://raw.githubusercontent.com/darshankparmar/ImageFusion/main/images/products/dress.png';
-            const modelUrl2 = 'https://raw.githubusercontent.com/darshankparmar/ImageFusion/main/images/model/katrina.png';
-            const productUrl2 = 'https://raw.githubusercontent.com/darshankparmar/ImageFusion/main/images/products/product.jpeg';
 
-            const useAlt = sampleAlt; // current state decides which to load now
-            const modelUrl = useAlt ? modelUrl2 : modelUrl1;
-            const productUrl = useAlt ? productUrl2 : productUrl1;
+            const current = sets[sampleIdx % sets.length];
+            const modelUrl = current.model;
+            const productUrl = current.product;
             const [b1, b2] = await Promise.all([
                 fetch(modelUrl).then(r => { if (!r.ok) throw new Error('Fetch sample failed'); return r.blob(); }),
                 fetch(productUrl).then(r => { if (!r.ok) throw new Error('Fetch sample failed'); return r.blob(); })
@@ -122,19 +140,15 @@ export default function Page() {
                 prodRef.current.files = dt2.files;
                 setPreview(prodRef.current, prodPrevRef.current, 'prod');
             }
-            const samplePrompt1 = `Create a professional e-commerce fashion photo. Take the blue floral dress
-from the first image and let the woman from the second image wear it.
-Generate a realistic, full-body shot of the woman wearing the dress, with
-the lighting and shadows adjusted to match the outdoor environment.`;
-            const samplePrompt2 = `Replace the red purse with the black-and-white handbag, keeping the model’s pose, grip, lighting, and background natural and photo-realistic.`;
-            const newPrompt = useAlt ? samplePrompt2 : samplePrompt1;
+            const newPrompt = current.prompt;
             if (promptRef.current) {
                 promptRef.current.value = newPrompt;
             }
             setPromptText(newPrompt);
-            setSampleAlt(!sampleAlt); // flip for next click
+            setSampleIdx((i) => (i + 1) % sets.length); // advance to next set
         } catch (e) {
             setError('Could not load sample images.');
+            setSampleIdx((i) => (i + 1) % sets.length);
         } finally {
             setLoadingSamples(false);
         }
@@ -245,7 +259,7 @@ the lighting and shadows adjusted to match the outdoor environment.`;
                                     aria-busy={loadingSamples}
                                     onClick={useSampleImages}
                                 >
-                                    {loadingSamples ? (<><span className="btn-loader" />Loading…</>) : 'Try sample images'}
+                                    {loadingSamples ? (<><span className="btn-loader" />Loading…</>) : '🔄 Try sample images'}
                                 </button>
                                 <div className="info-wrap" ref={infoWrapRef}>
                                     <button
@@ -263,7 +277,7 @@ the lighting and shadows adjusted to match the outdoor environment.`;
                                     {showSampleInfo && (
                                         <div className="tooltip" role="tooltip">
                                             <div className="tooltip-card">
-                                                Loads sample images. Tap again to switch to the alternate sample set.
+                                                Loads sample images. Tap again to cycle through curated sample sets.
                                             </div>
                                         </div>
                                     )}

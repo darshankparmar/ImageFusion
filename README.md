@@ -19,3 +19,19 @@ Notes
 - UI: `app/page.tsx`
 - Model: `gemini-2.5-flash-image-preview`
 - Large images may be slow; consider downscaling
+
+Example (Alia + Goggles)
+
+Inputs
+
+- Base image
+
+	![Base image](./images/model/alia.jpg)
+
+- Product image
+
+	![Product image](./images/products/goggle.jpg)
+
+Output
+
+![Result](./images/result/result3.png)
