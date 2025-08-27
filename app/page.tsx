@@ -25,6 +25,43 @@ export default function Page() {
         reader.readAsDataURL(file);
     };
 
+    const useSampleImages = async () => {
+        if (disabled || generating) return;
+        try {
+            setError(''); setStatus('');
+            const modelUrl = 'https://raw.githubusercontent.com/darshankparmar/ImageFusion/main/images/model/model.png';
+            const productUrl = 'https://raw.githubusercontent.com/darshankparmar/ImageFusion/main/images/products/dress.png';
+            const [b1, b2] = await Promise.all([
+                fetch(modelUrl).then(r => { if (!r.ok) throw new Error('Fetch sample failed'); return r.blob(); }),
+                fetch(productUrl).then(r => { if (!r.ok) throw new Error('Fetch sample failed'); return r.blob(); })
+            ]);
+            const baseFile = new File([b1], 'model.png', { type: b1.type || 'image/png' });
+            const prodFile = new File([b2], 'product.png', { type: b2.type || 'image/png' });
+            if (baseRef.current) {
+                const dt = new DataTransfer();
+                dt.items.add(baseFile);
+                baseRef.current.files = dt.files;
+                setPreview(baseRef.current, basePrevRef.current);
+            }
+            if (prodRef.current) {
+                const dt2 = new DataTransfer();
+                dt2.items.add(prodFile);
+                prodRef.current.files = dt2.files;
+                setPreview(prodRef.current, prodPrevRef.current);
+            }
+            const samplePrompt = `Create a professional e-commerce fashion photo. Take the blue floral dress
+from the first image and let the woman from the second image wear it.
+Generate a realistic, full-body shot of the woman wearing the dress, with
+the lighting and shadows adjusted to match the outdoor environment.`;
+            if (promptRef.current) {
+                promptRef.current.value = samplePrompt;
+            }
+            setStatus('Loaded sample images and prompt.');
+        } catch (e) {
+            setError('Could not load sample images.');
+        }
+    };
+
     const onGenerate = async () => {
         setError(''); setStatus('');
         const base = baseRef.current?.files?.[0];
@@ -113,6 +150,9 @@ export default function Page() {
                                     <input ref={prodRef} type="file" accept="image/*" className="file" onChange={() => setPreview(prodRef.current, prodPrevRef.current)} />
                                     <div className="preview-frame"><img ref={prodPrevRef} alt="Product preview" className="preview" /></div>
                                 </div>
+                            </div>
+                            <div className="actions" style={{ marginTop: 10 }}>
+                                <button type="button" className="btn btn-secondary btn-block btn-inline" disabled={disabled || generating} onClick={useSampleImages}>Try sample images</button>
                             </div>
                             <div style={{ marginTop: 14 }}>
                                 <h3 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
