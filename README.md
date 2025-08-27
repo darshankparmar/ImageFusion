@@ -35,11 +35,11 @@ Inputs
 
 - Base image
 
-	![Base image](./images/model.png)
+	![Base image](./images/model/model.png)
 
 - Product image
 
-	![Product image](./images/dress.png)
+	![Product image](./images/products/dress.png)
 
 Output
 
