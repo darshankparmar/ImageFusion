@@ -70,13 +70,13 @@ export default function Page() {
                 const dt = new DataTransfer();
                 dt.items.add(baseFile);
                 baseRef.current.files = dt.files;
-                setPreview(baseRef.current, basePrevRef.current);
+                setPreview(baseRef.current, basePrevRef.current, 'base');
             }
             if (prodRef.current) {
                 const dt2 = new DataTransfer();
                 dt2.items.add(prodFile);
                 prodRef.current.files = dt2.files;
-                setPreview(prodRef.current, prodPrevRef.current);
+                setPreview(prodRef.current, prodPrevRef.current, 'prod');
             }
             const samplePrompt = `Create a professional e-commerce fashion photo. Take the blue floral dress
 from the first image and let the woman from the second image wear it.
