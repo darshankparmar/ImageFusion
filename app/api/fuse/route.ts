@@ -18,14 +18,14 @@ export async function POST(req: NextRequest) {
         const form = await req.formData();
         const base = form.get('baseImage');
         const product = form.get('productImage');
-        const prompt = String(form.get('prompt') || '');
+        const promptRaw = String(form.get('prompt') || '').trim();
 
         if (!(base instanceof File) || !(product instanceof File)) {
             return new Response(JSON.stringify({ error: 'Both baseImage and productImage are required.' }), { status: 400 });
         }
-        if (!prompt) {
-            return new Response(JSON.stringify({ error: 'Prompt is required.' }), { status: 400 });
-        }
+        // Prompt is optional; supply a generic default when not provided
+        const defaultPrompt = 'Replace the product in the base image with the product from the second image, matching perspective, lighting, shadows, and scale. Keep everything else unchanged.';
+        const prompt = promptRaw || defaultPrompt;
 
         const apiKey = process.env.GOOGLE_API_KEY;
         if (!apiKey) {
