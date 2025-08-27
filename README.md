@@ -4,13 +4,11 @@ A Next.js app that lets users upload a base image and a product image, enter a p
 
 Deploy
 - Set `GOOGLE_API_KEY` in Vercel Project → Settings → Environment Variables.
-- Push this `vercel-next` folder to a Git repo (or make it the repo root) and import the repo into Vercel.
 - Build command: `npm run build`
-- Output: Next.js default
 
 Local dev (Windows CMD)
 ```
-cd /d d:\Work\Projects\ImageFusion\vercel-next
+cd /d d:\Work\Projects\ImageFusion
 npm install
 set GOOGLE_API_KEY=YOUR_KEY_HERE && npm run dev
 ```
