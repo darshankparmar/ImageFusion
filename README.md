@@ -19,3 +19,28 @@ Notes
 - UI: `app/page.tsx` — uploads images, shows previews, handles 429 retry, displays result with download.
 - Model: `gemini-2.5-flash-image-preview` (preview name may change as the model stabilizes).
 - Request size limits: If images are large, consider client-side downscaling before upload.
+
+## Example
+
+Prompt
+
+```
+Create a professional e-commerce fashion photo. Take the blue floral dress
+from the first image and let the woman from the second image wear it.
+Generate a realistic, full-body shot of the woman wearing the dress, with
+the lighting and shadows adjusted to match the outdoor environment.
+```
+
+Inputs
+
+- Base image
+
+	![Base image](./images/model.png)
+
+- Product image
+
+	![Product image](./images/dress.png)
+
+Output
+
+![Result](./images/result.png)
