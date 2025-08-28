@@ -2,6 +2,7 @@ import React from 'react';
 import { Analytics } from '@vercel/analytics/next';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 export const metadata: Metadata = {
     title: {
@@ -79,6 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <body>
                 {children}
                 <Analytics />
+                <GoogleAnalytics gaId="G-SG77GRLFST" />
             </body>
         </html>
     );
